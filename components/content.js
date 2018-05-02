@@ -4,7 +4,6 @@ import { Card, CardItem, Body, Text } from 'native-base';
 export default class Content extends React.Component {
   render() {
     let { message } = this.props;
-    console.log(message);
     return (
       <View style={{ flex: 1 }}>
         <ScrollView>
@@ -15,6 +14,7 @@ export default class Content extends React.Component {
   }
 
   renderCard = (message) => {
+    console.log(message);
     let result = null;
     result = message.map((value, index) => {
       return (
@@ -22,7 +22,7 @@ export default class Content extends React.Component {
           <CardItem>
             <Body>
               <Text>
-                {value}
+                {value.name}: {value.text}
               </Text>
             </Body>
           </CardItem>

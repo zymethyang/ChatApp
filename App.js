@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, StatusBar } from 'react-native';
+import { StyleSheet, Text, View, StatusBar, TextInput, AsyncStorage } from 'react-native';
 import { Client, Message } from 'react-native-paho-mqtt';
 import Content from './components/content';
 import Input from './components/input';
@@ -30,8 +30,16 @@ export default class App extends React.Component {
       loading: true,
       mqttConnect: false,
       message: [],
-      text: ''
+      text: '',
+      name: ''
     }
+  }
+  componentWillMount() {
+    AsyncStorage.getItem('mess').then(mess => {
+      this.setState({
+        message: JSON.parse(mess)
+      })
+    });
   }
   async componentDidMount() {
     await Expo.Font.loadAsync({
@@ -51,7 +59,8 @@ export default class App extends React.Component {
 
     client.on('messageReceived', (message) => {
       let tmpMessage = this.state.message;
-      tmpMessage.push(message.payloadString);
+      tmpMessage.push(JSON.parse(message.payloadString));
+      AsyncStorage.setItem('mess', JSON.stringify(this.state.message));
       this.setState({
         message: tmpMessage
       })
@@ -80,12 +89,9 @@ export default class App extends React.Component {
   }
 
   sub = () => {
-    const message = new Message(this.state.text);
+    const message = new Message(JSON.stringify({ text: this.state.text, name: this.state.name }));
     message.destinationName = 'chat';
     client.send(message);
-    this.setState({
-      text: ''
-    })
   }
 
   render() {
@@ -96,7 +102,15 @@ export default class App extends React.Component {
       />,
       <View style={{ flex: 1, flexDirection: 'column' }} key={"content"}>
         {this.state.loading === false ?
-          [<View style={{ flex: 8 }} key={"Content"}>
+          [<View style={{ flex: 1, marginLeft: 20 }} key={"Name"}>
+            <TextInput
+              style={{ height: '100%' }}
+              placeholder="Nhập vào tên!"
+              underlineColorAndroid='transparent'
+              onChangeText={name => this.setState({ name: name })}
+            />
+          </View>,
+          <View style={{ flex: 8 }} key={"Content"}>
             <Content message={this.state.message}></Content>
           </View>,
           <View style={{ flex: 1, flexDirection: 'row' }} key={"Input"}>
